@@ -67,6 +67,8 @@ export default function MapComponent({ parcels, selectedParcelId, onParcelSelect
       
       layerGroup.clearLayers();
 
+      const layers: { [id: string]: LeafletLayer } = {};
+
       if (parcels.length > 0) {
         parcels.forEach((parcel) => {
           const isSelected = parcel.id === selectedParcelId;
@@ -82,13 +84,16 @@ export default function MapComponent({ parcels, selectedParcelId, onParcelSelect
           polygon.on('click', (e: any) => {
             L.DomEvent.stopPropagation(e);
             onParcelSelect(parcel.id);
-            map.fitBounds(polygon.getBounds().pad(0.1));
           });
           
           layerGroup.addLayer(polygon);
+          layers[parcel.id] = polygon;
         });
 
-        if (!selectedParcelId) {
+        if (selectedParcelId && layers[selectedParcelId]) {
+          const selectedLayer = layers[selectedParcelId];
+          map.flyToBounds(selectedLayer.getBounds().pad(0.1));
+        } else if (parcels.length > 0) {
             const allCoords: any[] = parcels.flatMap(p => p.geometry.coordinates[0].map(coord => [coord[1], coord[0]]));
             if (allCoords.length > 0) {
                 const bounds = L.latLngBounds(allCoords);

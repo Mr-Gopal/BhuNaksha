@@ -1,7 +1,7 @@
 "use client";
 
 import type { Parcel } from "@/types";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import AppHeader from "@/components/header";
 import DetailsPanel from "@/components/details-panel";
 import MapComponentWrapper from "@/components/map-component-wrapper";
@@ -35,9 +35,17 @@ export default function BhuVisionClient({ parcels: initialParcels }: BhuVisionCl
     return initialParcels.find((p) => p.id === selectedParcelId) ?? null;
   }, [selectedParcelId, initialParcels]);
 
-  const handleParcelSelect = (parcelId: string | null) => {
+  const handleParcelSelect = useCallback((parcelId: string | null) => {
     setSelectedParcelId(parcelId);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (searchQuery && filteredParcels.length === 1) {
+      handleParcelSelect(filteredParcels[0].id);
+    } else if (!searchQuery) {
+      handleParcelSelect(null);
+    }
+  }, [searchQuery, filteredParcels, handleParcelSelect]);
   
   if (!isClient) {
     return null; // Or a loading spinner
