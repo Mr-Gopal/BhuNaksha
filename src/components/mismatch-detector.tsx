@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { AlertCircle, Lightbulb, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +29,7 @@ function SubmitButton() {
 }
 
 export default function MismatchDetector({ parcel }: MismatchDetectorProps) {
-  const [state, formAction] = useFormState(runMismatchDetection, initialState);
+  const [state, formAction] = useActionState(runMismatchDetection, initialState);
 
   const parcelDataString = JSON.stringify(
     {
