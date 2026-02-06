@@ -1,8 +1,3 @@
-# BhuNaksha
-
-This is a Next.js application built with Firebase Studio.
-
-## Getting Started
 
 To run the development server:
 
