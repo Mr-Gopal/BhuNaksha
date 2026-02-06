@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
-  title: 'BhuVision',
+  title: 'BhuNaksha',
   description: 'A modern solution for land record management.',
 };
 

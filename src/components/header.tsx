@@ -36,7 +36,7 @@ export default function AppHeader({ searchQuery, onSearchQueryChange }: AppHeade
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6 z-10 flex-shrink-0">
       <div className="flex items-center gap-2">
         <MapPin className="h-6 w-6 text-primary" />
-        <h1 className="text-xl font-bold tracking-tight">BhuVision</h1>
+        <h1 className="text-xl font-bold tracking-tight">BhuNaksha</h1>
       </div>
       <div className="flex-1 max-w-md mx-4">
         <div className="relative">
