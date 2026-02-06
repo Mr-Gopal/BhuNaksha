@@ -14,6 +14,11 @@
           "type": "string",
           "description": "User's full name."
         },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
         "phoneNumber": {
           "type": "string",
           "description": "User's phone number for contact purposes."
@@ -43,7 +48,7 @@
       "required": [
         "id",
         "name",
-        "phoneNumber"
+        "email"
       ]
     },
     "UserLocation": {
