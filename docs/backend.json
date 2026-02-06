@@ -1,0 +1,152 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user profile in the BhuVision application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user profile."
+        },
+        "name": {
+          "type": "string",
+          "description": "User's full name."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "User's phone number for contact purposes."
+        },
+        "contactInfo": {
+          "type": "string",
+          "description": "Additional contact information for the user."
+        },
+        "locationIds": {
+          "type": "array",
+          "description": "References to UserLocations. (Relationship: UserProfile 1:N UserLocation)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "phoneNumber"
+      ]
+    },
+    "UserLocation": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserLocation",
+      "type": "object",
+      "description": "Represents a location associated with a user, including parcel coordinates and status.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user location."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N UserLocation)"
+        },
+        "parcelCoordinates": {
+          "type": "string",
+          "description": "GeoJSON polygon representing the land parcel's coordinates."
+        },
+        "surveyNumber": {
+          "type": "string",
+          "description": "Survey number associated with the land parcel."
+        },
+        "area": {
+          "type": "number",
+          "description": "Area of the land parcel."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the land parcel (matched, mismatched, corrected, pending approval)."
+        },
+        "city": {
+          "type": "string",
+          "description": "City where the location is situated."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the location was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the location was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "parcelCoordinates",
+        "surveyNumber",
+        "area",
+        "status",
+        "city"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information.  Path-based ownership: Only the user with the matching `userId` can access this document.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/locations/{locationId}",
+        "definition": {
+          "entityName": "UserLocation",
+          "schema": {
+            "$ref": "#/backend/entities/UserLocation"
+          },
+          "description": "Stores location data for a specific user. Includes denormalized `userId` for authorization independence. This allows security rules to validate the user's ownership without needing to read the parent `UserProfile` document.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the location."
+            },
+            {
+              "name": "locationId",
+              "description": "The unique identifier of the location."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support user profile management, location tracking, and search functionalities for the BhuVision application. The structure emphasizes authorization independence through path-based ownership and avoids `get()` calls in security rules. It also enables secure `list` operations by segregating user data into individual user documents and locations into user-specific subcollections.\n\nThe core principle is to organize data under user-specific paths (`/users/{userId}`), ensuring that each user controls their own profile and locations. This approach simplifies security rules, as access can be granted based on the `request.auth.uid` matching the `userId` in the path.\n\nThe `UserLocation` documents are stored in a subcollection under the user's profile (`/users/{userId}/locations/{locationId}`). Each `UserLocation` includes a `userId` field, which is redundant but CRUCIAL. It enforces authorization independence; security rules can validate that `request.auth.uid == resource.data.userId` without needing to `get()` the parent `UserProfile`.\n\nThis structure directly supports the requested features:\n\n*   **User Profile Management:**  User profiles are stored under `/users/{userId}`. Users can update their own profiles. Security rules ensure that only the authenticated user can modify their own profile data.\n*   **Location Tracking:**  User locations are stored under `/users/{userId}/locations/{locationId}`.  Each location document includes the `userId`, enabling independent authorization. Users can add and edit their own locations.\n*   **Search Functionality:** While Firestore is not ideal for complex searches, the structure allows for simple queries by phone number or name against the `users` collection. More advanced search functionality may require a separate search index (e.g., Algolia) that mirrors the data in Firestore. The city field in UserLocation facilitates location-based filtering.\n*   **Gamified Map Interface and Dynamic Color Coding**: The denormalized location data, accessible via the user, enables the map interface to render and color-code parcels dynamically based on their status. The status field within each location document drives the color coding.\n\nThis structure provides a secure and scalable foundation for the BhuVision application, aligning with best practices for Firestore data modeling."
+  }
+}
